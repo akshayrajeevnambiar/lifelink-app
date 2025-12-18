@@ -1,4 +1,4 @@
-import { Card } from "shadcn/ui/card";
+import { Card } from "./ui/card";
 
 export default function LoadingSkeleton({ lines = 3 }: { lines?: number }) {
   return (

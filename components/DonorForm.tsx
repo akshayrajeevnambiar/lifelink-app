@@ -1,6 +1,6 @@
-import { Button } from "shadcn/ui/button";
-import { Input } from "shadcn/ui/input";
-import { Select, SelectItem } from "shadcn/ui/select";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Select, SelectItem } from "./ui/select";
 
 export default function DonorForm() {
   return (

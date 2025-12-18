@@ -1,3 +1,9 @@
+
+import PageHeader from "../../components/PageHeader";
+import { Input } from "../../components/ui/input";
+import LoadingSkeleton from "../../components/LoadingSkeleton";
+
+export default function SearchPage() {
   return (
     <div>
       <PageHeader
@@ -11,7 +17,4 @@
       <LoadingSkeleton lines={4} />
     </div>
   );
-import PageHeader from "../../components/PageHeader";
-import { Input } from "shadcn/ui/input";
-import LoadingSkeleton from "../../components/LoadingSkeleton";
 }

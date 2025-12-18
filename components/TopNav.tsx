@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Search, Plus } from "lucide-react";
-import { Button } from "shadcn/ui/button";
+import { Button } from "./ui/button";
 
 export default function TopNav() {
   return (

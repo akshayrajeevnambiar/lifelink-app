@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { Card } from "shadcn/ui/card";
-import { Badge } from "shadcn/ui/badge";
+import { Card } from "./ui/card";
+import { Badge } from "./ui/badge";
 
 export default function EmptyState({
   icon,

@@ -1,4 +1,9 @@
 
+import PageHeader from "../components/PageHeader";
+import EmptyState from "../components/EmptyState";
+import { Button } from "../components/ui/button";
+
+export default function Home() {
   return (
     <div>
       <PageHeader
@@ -17,7 +22,4 @@
       />
     </div>
   );
-import PageHeader from "../components/PageHeader";
-import EmptyState from "../components/EmptyState";
-import { Button } from "shadcn/ui/button";
 }
