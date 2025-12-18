@@ -1,3 +1,13 @@
+// Simple in-memory rate limiter (per IP if available, else global)
+const RATE_LIMIT = 30; // requests
+const WINDOW_MS = 60 * 1000; // 1 minute
+const ipHits: Record<string, { count: number; windowStart: number }> = {};
+let globalHits = { count: 0, windowStart: Date.now() };
+function getClientIp(req: NextRequest): string | null {
+  // Try to get IP from headers (works on Vercel/Next.js edge)
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  return ip || null;
+}
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
@@ -32,6 +42,31 @@ function seededShuffle<T>(array: T[], seed: string | undefined): T[] {
 }
 
 export async function GET(req: NextRequest) {
+  // --- Rate limiting logic ---
+  const ip = getClientIp(req);
+  const key = ip || 'global';
+  const now = Date.now();
+  if (ip) {
+    if (!ipHits[key] || now - ipHits[key].windowStart > WINDOW_MS) {
+      ipHits[key] = { count: 1, windowStart: now };
+    } else {
+      ipHits[key].count++;
+    }
+    if (ipHits[key].count > RATE_LIMIT) {
+      return NextResponse.json({ error: 'Too many requests. Please wait a minute and try again.' }, { status: 429 });
+    }
+  } else {
+    // Fallback to global rate limit
+    if (now - globalHits.windowStart > WINDOW_MS) {
+      globalHits = { count: 1, windowStart: now };
+    } else {
+      globalHits.count++;
+    }
+    if (globalHits.count > RATE_LIMIT) {
+      return NextResponse.json({ error: 'Too many requests. Please wait a minute and try again.' }, { status: 429 });
+    }
+  }
+  // --- End rate limiting ---
   const url = new URL(req.url);
   const params = Object.fromEntries(url.searchParams.entries());
   const parse = QuerySchema.safeParse(params);
