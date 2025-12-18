@@ -15,9 +15,32 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  // Store last search params for refresh
+  const [lastSearch, setLastSearch] = useState<{ bloodGroup: string; location: string } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const fetchResults = async (paramsObj: { bloodGroup: string; location: string }, seed?: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        bloodGroup: paramsObj.bloodGroup,
+        location: paramsObj.location,
+      });
+      if (seed) params.set('seed', seed);
+      const res = await fetch(`/api/donors/search?${params.toString()}`);
+      if (!res.ok) throw new Error("Search failed");
+      const data = await res.json();
+      setResults(data.donors || []);
+    } catch (err) {
+      setError("Failed to fetch results.");
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,22 +52,14 @@ export default function SearchPage() {
       setError("Please fill in all fields.");
       return;
     }
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        bloodGroup: form.bloodGroup,
-        location: form.location,
-      });
-      const res = await fetch(`/api/donors/search?${params.toString()}`);
-      if (!res.ok) throw new Error("Search failed");
-      const data = await res.json();
-      setResults(data.donors || []);
-    } catch (err) {
-      setError("Failed to fetch results.");
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
+    setLastSearch({ bloodGroup: form.bloodGroup, location: form.location });
+    await fetchResults({ bloodGroup: form.bloodGroup, location: form.location });
+  };
+
+  const handleRefresh = async () => {
+    if (!lastSearch) return;
+    setSubmitted(true);
+    await fetchResults(lastSearch, Date.now().toString());
   };
 
   return (
@@ -80,13 +95,24 @@ export default function SearchPage() {
             required
           />
         </label>
-        <button
-          type="submit"
-          className="bg-primary text-white rounded px-4 py-2 font-semibold hover:bg-primary/90 disabled:opacity-50"
-          disabled={loading}
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="bg-primary text-white rounded px-4 py-2 font-semibold hover:bg-primary/90 disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? "Searching..." : "Search"}
+          </button>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="bg-secondary text-gray-900 rounded px-4 py-2 font-semibold border border-gray-300 hover:bg-secondary/80 disabled:opacity-50"
+            disabled={loading || !lastSearch}
+            title={!lastSearch ? "Search first to enable refresh" : "Refresh results"}
+          >
+            Refresh results
+          </button>
+        </div>
       </form>
       {loading && (
         <div className="space-y-4">
