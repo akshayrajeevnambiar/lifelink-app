@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum BloodGroup {
+  O_POSITIVE  @map("O+")
+  O_NEGATIVE  @map("O-")
+  A_POSITIVE  @map("A+")
+  A_NEGATIVE  @map("A-")
+  B_POSITIVE  @map("B+")
+  B_NEGATIVE  @map("B-")
+  AB_POSITIVE @map("AB+")
+  AB_NEGATIVE @map("AB-")
+}
+
+model Donor {
+  id         String     @id @default(uuid())
+  name       String
+  bloodGroup BloodGroup
+  location   String
+  phone      String
+  createdAt  DateTime   @default(now())
+
+  @@unique([name, bloodGroup, location], name: "name_bloodGroup_location")
+}
