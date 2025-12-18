@@ -79,6 +79,7 @@ export async function GET(req: NextRequest) {
   const allDonors = await prisma.donor.findMany({
     where: { bloodGroup: bloodGroup as $Enums.BloodGroup },
   });
+  // No logging of phone numbers for privacy
   const donors = allDonors.filter(d => normalizeLocation(d.location).includes(normLocation));
   type Donor = typeof donors[number];
   const shuffled = seededShuffle(donors, seed);
